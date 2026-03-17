@@ -1,0 +1,15 @@
+[project]
+name = "seven-point-checker"
+version = "0.1.0"
+description = "照明器具の7点照合チェッカー Streamlitアプリ"
+requires-python = ">=3.13"
+dependencies = [
+    "google-genai",
+    "streamlit",
+    "openpyxl",
+    "Pillow",
+    "tenacity",
+    "python-dotenv",
+    "pandas",
+    "pymupdf>=1.26.7",
+]

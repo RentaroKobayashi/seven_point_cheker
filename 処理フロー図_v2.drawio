@@ -1,0 +1,122 @@
+<mxfile host="app.diagrams.net" agent="Claude Code" version="29.3.8">
+  <diagram name="処理フロー" id="flow_v2">
+    <mxGraphModel dx="1576" dy="1400" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="start" parent="1" style="rounded=1;whiteSpace=wrap;arcSize=50;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1;" value="開始" vertex="1">
+          <mxGeometry height="44" width="90" x="255" y="0" as="geometry" />
+        </mxCell>
+
+        <mxCell id="upload" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=12;" value="項目リスト（CSV / Excel）と&#xa;資料画像（PNG / JPEG / PDF）をアップロード&#xa;→「抽出実行」ボタンを押す" vertex="1">
+          <mxGeometry height="76" width="300" x="150" y="74" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pdf" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=12;" value="PDFがあれば各ページを画像に変換" vertex="1">
+          <mxGeometry height="46" width="300" x="150" y="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="classify" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="ファイル名から画像を6カテゴリに分類&#xa;（カタログ / 組立図 / 承認図 / 器具銘板 / 取扱説明書 / 外装ラベル）&#xa;※ API呼出なし・判定不可の場合は手動修正UIへ" vertex="1">
+          <mxGeometry height="80" width="340" x="130" y="256" as="geometry" />
+        </mxCell>
+
+        <mxCell id="separate" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=12;" value="カタログ画像と技術資料（5種）に分離" vertex="1">
+          <mxGeometry height="46" width="300" x="150" y="366" as="geometry" />
+        </mxCell>
+
+        <mxCell id="has_catalog" parent="1" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=12;" value="カタログ&#xa;画像あり？" vertex="1">
+          <mxGeometry height="110" width="130" x="235" y="442" as="geometry" />
+        </mxCell>
+
+        <mxCell id="catalog_extract" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" value="【Phase 1】カタログ抽出（並列 最大3）&#xa;項目リストからカタログ用プロンプトを生成&#xa;Agentic Vision（ズーム・クロップ）で値抽出&#xa;→ BBox座標取得" vertex="1">
+          <mxGeometry height="90" width="310" x="420" y="395" as="geometry" />
+        </mxCell>
+
+        <mxCell id="catalog_merge" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" value="全カタログ画像の抽出値を1つに統合&#xa;→ 技術資料を読み取る際のヒントとして使用" vertex="1">
+          <mxGeometry height="60" width="310" x="420" y="510" as="geometry" />
+        </mxCell>
+
+        <mxCell id="doc_extract" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" value="【Phase 2】技術資料を並列抽出（最大3）&#xa;各画像ごとに:&#xa;  ① カタログ値をヒントとして埋め込んだ検証プロンプトを生成&#xa;  ② Agentic Vision で値抽出&#xa;     （書き方は違えど意味・数値が同じ情報を探す）&#xa;  ③ BBox座標取得 → 画像にBBox描画" vertex="1">
+          <mxGeometry height="126" width="370" x="115" y="610" as="geometry" />
+        </mxCell>
+
+        <mxCell id="merge_doc" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=12;" value="同一文書種別の複数ページを1エントリに統合&#xa;コンフリクト時はカタログヒントとの類似度で解決" vertex="1">
+          <mxGeometry height="56" width="370" x="115" y="770" as="geometry" />
+        </mxCell>
+
+        <mxCell id="save_evidence" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=12;" value="【Phase 3】結果出力&#xa;・エビデンス画像を evidence/{タイムスタンプ}/ に保存&#xa;・読み取り結果Excelを出力" vertex="1">
+          <mxGeometry height="70" width="370" x="115" y="856" as="geometry" />
+        </mxCell>
+
+        <mxCell id="has_correct" parent="1" style="rhombus;strokeWidth=2;whiteSpace=wrap;fontSize=12;" value="正解データ&#xa;（マスターExcel）&#xa;あり？" vertex="1">
+          <mxGeometry height="120" width="150" x="225" y="960" as="geometry" />
+        </mxCell>
+
+        <mxCell id="judge" parent="1" style="whiteSpace=wrap;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" value="正解データと照合し判定&#xa;OK / NG / 部分一致 / 対象外&#xa;（正解なし＋抽出あり → 対象外＝OK扱い）&#xa;正誤結果Excelを出力" vertex="1">
+          <mxGeometry height="86" width="310" x="420" y="977" as="geometry" />
+        </mxCell>
+
+        <mxCell id="display" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=12;" value="結果を画面に表示&#xa;・分類結果 ・BBox付き画像 ・照合マトリクス&#xa;・正誤結果テーブル ・Excelダウンロードボタン" vertex="1">
+          <mxGeometry height="70" width="370" x="115" y="1120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="end" parent="1" style="rounded=1;whiteSpace=wrap;arcSize=50;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1;" value="終了" vertex="1">
+          <mxGeometry height="44" width="90" x="255" y="1220" as="geometry" />
+        </mxCell>
+
+        <!-- ===== 矢印 ===== -->
+        <mxCell id="e1" edge="1" parent="1" source="start" target="upload" style="endArrow=block;endFill=1;" />
+        <mxCell id="e2" edge="1" parent="1" source="upload" target="pdf" style="endArrow=block;endFill=1;" />
+        <mxCell id="e3" edge="1" parent="1" source="pdf" target="classify" style="endArrow=block;endFill=1;" />
+        <mxCell id="e4" edge="1" parent="1" source="classify" target="separate" style="endArrow=block;endFill=1;" />
+        <mxCell id="e5" edge="1" parent="1" source="separate" target="has_catalog" style="endArrow=block;endFill=1;" />
+
+        <mxCell id="e6" edge="1" parent="1" source="has_catalog" target="catalog_extract" style="endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" value="YES">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e7" edge="1" parent="1" source="catalog_extract" target="catalog_merge" style="endArrow=block;endFill=1;" />
+
+        <mxCell id="e8" edge="1" parent="1" source="catalog_merge" target="doc_extract" style="endArrow=block;endFill=1;exitX=0;exitY=1;entryX=1;entryY=0;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="400" y="600" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e9" edge="1" parent="1" source="has_catalog" target="doc_extract" style="endArrow=block;endFill=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" value="NO">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="300" y="590" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e10" edge="1" parent="1" source="doc_extract" target="merge_doc" style="endArrow=block;endFill=1;" />
+        <mxCell id="e11" edge="1" parent="1" source="merge_doc" target="save_evidence" style="endArrow=block;endFill=1;" />
+        <mxCell id="e12" edge="1" parent="1" source="save_evidence" target="has_correct" style="endArrow=block;endFill=1;" />
+
+        <mxCell id="e13" edge="1" parent="1" source="has_correct" target="judge" style="endArrow=block;endFill=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" value="YES">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e14" edge="1" parent="1" source="judge" target="display" style="endArrow=block;endFill=1;exitX=0.5;exitY=1;entryX=1;entryY=0;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="575" y="1110" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e15" edge="1" parent="1" source="has_correct" target="display" style="endArrow=block;endFill=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" value="NO">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e16" edge="1" parent="1" source="display" target="end" style="endArrow=block;endFill=1;" />
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
